@@ -1,11 +1,11 @@
-import { notifyAll, observe } from '../observability'
-import { getComplexSignal } from './'
-import { SignalIterableIterator } from './signal_iterable_iterator'
+import { notifyAll, observe } from "../observability";
+import { getComplexSignal } from "./";
+import { SignalIterableIterator } from "./signal_iterable_iterator";
 
-const FULL_ARRAY_FIELD = 'array'
+const FULL_ARRAY_FIELD = "array";
 
 export class SignalArray<T> implements Array<T> {
-  #wrappedArray: T[]
+  #wrappedArray: T[];
 
   static SignalArrayProxy = {
     get<T extends SignalArray<M>, P extends PropertyKey, M>(
@@ -14,14 +14,14 @@ export class SignalArray<T> implements Array<T> {
       receiver?: unknown,
     ): P extends keyof T ? T[P] : any {
       if (!Number.isNaN(Number(propertyKey))) {
-        observe(target, FULL_ARRAY_FIELD)
-        return getComplexSignal(Reflect.get(target._wrappedArray, propertyKey, receiver)) as any
+        observe(target, FULL_ARRAY_FIELD);
+        return getComplexSignal(Reflect.get(target._wrappedArray, propertyKey, receiver)) as any;
       }
-      let ret = Reflect.get(target, propertyKey, receiver)
-      if (typeof ret === 'function') {
-        ret = ret.bind(target)
+      let ret = Reflect.get(target, propertyKey, receiver);
+      if (typeof ret === "function") {
+        ret = ret.bind(target);
       }
-      return ret
+      return ret;
     },
     set<T extends SignalArray<M>, P extends PropertyKey, M>(
       target: T,
@@ -30,25 +30,25 @@ export class SignalArray<T> implements Array<T> {
       receiver?: any,
     ): boolean {
       if (!Number.isNaN(Number(propertyKey))) {
-        const result = Reflect.set(target.#wrappedArray, propertyKey, value)
-        notifyAll(target, FULL_ARRAY_FIELD)
-        return result
+        const result = Reflect.set(target.#wrappedArray, propertyKey, value);
+        notifyAll(target, FULL_ARRAY_FIELD);
+        return result;
       }
-      return Reflect.set(target, propertyKey, value, receiver)
+      return Reflect.set(target, propertyKey, value, receiver);
     },
-  }
+  };
 
   get _wrappedArray() {
-    return this.#wrappedArray
+    return this.#wrappedArray;
   }
 
   constructor(wrappedArray: T[]) {
-    this.#wrappedArray = wrappedArray
+    this.#wrappedArray = wrappedArray;
 
-    this[Symbol.unscopables] = this.#wrappedArray[Symbol.unscopables]
+    this[Symbol.unscopables] = this.#wrappedArray[Symbol.unscopables];
 
-    const proxyHandler: ProxyHandler<SignalArray<T>> = SignalArray.SignalArrayProxy
-    return new Proxy(this, proxyHandler)
+    const proxyHandler: ProxyHandler<SignalArray<T>> = SignalArray.SignalArrayProxy;
+    return new Proxy(this, proxyHandler);
   }
 
   /**
@@ -58,12 +58,12 @@ export class SignalArray<T> implements Array<T> {
    * @param depth The maximum recursion depth
    */
   flat<A, D extends number = 1>(this: A, depth?: D): FlatArray<A, D>[] {
-    return Array.prototype.flat.call(this, depth) as any
+    return Array.prototype.flat.call(this, depth) as any;
   }
 
   [Symbol.unscopables]!: {
-    [K in keyof any[]]?: boolean
-  }
+    [K in keyof any[]]?: boolean;
+  };
 
   /**
    * Returns the value of the last element in the array where predicate is true, and undefined
@@ -74,10 +74,10 @@ export class SignalArray<T> implements Array<T> {
    * @param thisArg If provided, it will be used as the this value for each invocation of
    * predicate. If it is not provided, undefined is used instead.
    */
-  findLast<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S | undefined
+  findLast<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S | undefined;
   findLast(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T | undefined {
-    observe(this, FULL_ARRAY_FIELD)
-    return getComplexSignal(this.#wrappedArray.findLast(predicate, thisArg))
+    observe(this, FULL_ARRAY_FIELD);
+    return getComplexSignal(this.#wrappedArray.findLast(predicate, thisArg));
   }
 
   /**
@@ -90,8 +90,8 @@ export class SignalArray<T> implements Array<T> {
    * predicate. If it is not provided, undefined is used instead.
    */
   findLastIndex(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): number {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.findLastIndex(predicate, thisArg)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.findLastIndex(predicate, thisArg);
   }
 
   /**
@@ -100,12 +100,12 @@ export class SignalArray<T> implements Array<T> {
    * @param fromIndex The position in this array at which to begin searching for searchElement.
    */
   includes(searchElement: T, fromIndex?: number): boolean {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.includes(searchElement, fromIndex)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.includes(searchElement, fromIndex);
   }
 
   at(n: number): T {
-    return getComplexSignal(this.#wrappedArray[n])
+    return getComplexSignal(this.#wrappedArray[n]);
   }
 
   /**
@@ -122,38 +122,38 @@ export class SignalArray<T> implements Array<T> {
     callback: (this: This, value: T, index: number, array: T[]) => U | ReadonlyArray<U>,
     thisArg?: This,
   ): U[] {
-    observe(this, FULL_ARRAY_FIELD)
-    return getComplexSignal(this.#wrappedArray.flatMap(callback, thisArg))
+    observe(this, FULL_ARRAY_FIELD);
+    return getComplexSignal(this.#wrappedArray.flatMap(callback, thisArg));
   }
 
   // /** Iterator */
   [Symbol.iterator](): IterableIterator<T> {
-    observe(this, FULL_ARRAY_FIELD)
-    return new SignalIterableIterator<T>(this.#wrappedArray[Symbol.iterator]())
+    observe(this, FULL_ARRAY_FIELD);
+    return new SignalIterableIterator<T>(this.#wrappedArray[Symbol.iterator]());
   }
 
   // /**
   //  * Returns an iterable of key, value pairs for every entry in the array
   //  */
   entries(): IterableIterator<[number, T]> {
-    observe(this, FULL_ARRAY_FIELD)
-    return new SignalIterableIterator<[number, T]>(this.#wrappedArray.entries())
+    observe(this, FULL_ARRAY_FIELD);
+    return new SignalIterableIterator<[number, T]>(this.#wrappedArray.entries());
   }
 
   // /**
   //  * Returns an iterable of keys in the array
   //  */
   keys(): IterableIterator<number> {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.keys()
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.keys();
   }
 
   // /**
   //  * Returns an iterable of values in the array
   //  */
   values(): IterableIterator<T> {
-    observe(this, FULL_ARRAY_FIELD)
-    return new SignalIterableIterator<T>(this.#wrappedArray.values())
+    observe(this, FULL_ARRAY_FIELD);
+    return new SignalIterableIterator<T>(this.#wrappedArray.values());
   }
 
   /**
@@ -165,10 +165,10 @@ export class SignalArray<T> implements Array<T> {
    * @param thisArg If provided, it will be used as the this value for each invocation of
    * predicate. If it is not provided, undefined is used instead.
    */
-  find<S extends T>(predicate: (value: T, index: number, obj: T[]) => value is S, thisArg?: any): S | undefined
+  find<S extends T>(predicate: (value: T, index: number, obj: T[]) => value is S, thisArg?: any): S | undefined;
   find(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): T | undefined {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.find(predicate, thisArg)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.find(predicate, thisArg);
   }
 
   /**
@@ -181,8 +181,8 @@ export class SignalArray<T> implements Array<T> {
    * predicate. If it is not provided, undefined is used instead.
    */
   findIndex(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): number {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.findIndex(predicate, thisArg)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.findIndex(predicate, thisArg);
   }
 
   /**
@@ -194,9 +194,9 @@ export class SignalArray<T> implements Array<T> {
    * length+end.
    */
   fill(value: T, start?: number, end?: number): this {
-    this.#wrappedArray.fill(value, start, end)
-    notifyAll(this, FULL_ARRAY_FIELD)
-    return this
+    this.#wrappedArray.fill(value, start, end);
+    notifyAll(this, FULL_ARRAY_FIELD);
+    return this;
   }
 
   /**
@@ -209,22 +209,22 @@ export class SignalArray<T> implements Array<T> {
    * @param end If not specified, length of the this object is used as its default value.
    */
   copyWithin(target: number, start: number, end?: number): this {
-    notifyAll(this, FULL_ARRAY_FIELD)
-    this.#wrappedArray.copyWithin(target, start, end)
-    return this
+    notifyAll(this, FULL_ARRAY_FIELD);
+    this.#wrappedArray.copyWithin(target, start, end);
+    return this;
   }
 
   get length(): number {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.length
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.length;
   }
   toString(): string {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.toString()
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.toString();
   }
   toLocaleString(): string {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.toLocaleString()
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.toLocaleString();
   }
   /**
    * Removes the last element from an array and returns it.
@@ -232,20 +232,20 @@ export class SignalArray<T> implements Array<T> {
    */
   pop(): T | undefined {
     if (this.length > 0) {
-      const elem = this.#wrappedArray.pop()
-      notifyAll(this, FULL_ARRAY_FIELD)
-      return elem
+      const elem = this.#wrappedArray.pop();
+      notifyAll(this, FULL_ARRAY_FIELD);
+      return elem;
     }
-    return undefined
+    return undefined;
   }
   /**
    * Appends new elements to the end of an array, and returns the new length of the array.
    * @param items New elements to add to the array.
    */
   push(...items: T[]): number {
-    const response = this.#wrappedArray.push(...items)
-    notifyAll(this, FULL_ARRAY_FIELD)
-    return response
+    const response = this.#wrappedArray.push(...items);
+    notifyAll(this, FULL_ARRAY_FIELD);
+    return response;
   }
   /**
    * Combines two or more arrays.
@@ -253,25 +253,25 @@ export class SignalArray<T> implements Array<T> {
    * @param items Additional arrays and/or items to add to the end of the array.
    */
   concat(...items: (T | ConcatArray<T>)[]): T[] {
-    observe(this, FULL_ARRAY_FIELD)
-    return getComplexSignal(this.#wrappedArray.concat(...items))
+    observe(this, FULL_ARRAY_FIELD);
+    return getComplexSignal(this.#wrappedArray.concat(...items));
   }
   /**
    * Adds all the elements of an array into a string, separated by the specified separator string.
    * @param separator A string used to separate one element of the array from the next in the resulting string. If omitted, the array elements are separated with a comma.
    */
   join(separator?: string): string {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.join(separator)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.join(separator);
   }
   /**
    * Reverses the elements in an array in place.
    * This method mutates the array and returns a reference to the same array.
    */
   reverse(): T[] {
-    this.#wrappedArray.reverse()
-    notifyAll(this, FULL_ARRAY_FIELD)
-    return this
+    this.#wrappedArray.reverse();
+    notifyAll(this, FULL_ARRAY_FIELD);
+    return this;
   }
   /**
    * Removes the first element from an array and returns it.
@@ -279,11 +279,11 @@ export class SignalArray<T> implements Array<T> {
    */
   shift(): T | undefined {
     if (this.length > 0) {
-      const elem = this.#wrappedArray.shift()
-      notifyAll(this, FULL_ARRAY_FIELD)
-      return elem
+      const elem = this.#wrappedArray.shift();
+      notifyAll(this, FULL_ARRAY_FIELD);
+      return elem;
     }
-    return undefined
+    return undefined;
   }
   /**
    * Returns a copy of a section of an array.
@@ -295,8 +295,8 @@ export class SignalArray<T> implements Array<T> {
    * If end is undefined, then the slice extends to the end of the array.
    */
   slice(start?: number, end?: number): T[] {
-    observe(this, FULL_ARRAY_FIELD)
-    return getComplexSignal(this.slice(start, end))
+    observe(this, FULL_ARRAY_FIELD);
+    return getComplexSignal(this.slice(start, end));
   }
   /**
    * Sorts an array in place.
@@ -309,9 +309,9 @@ export class SignalArray<T> implements Array<T> {
    * ```
    */
   sort(compareFn?: (a: T, b: T) => number): this {
-    this.sort(compareFn)
-    notifyAll(this, FULL_ARRAY_FIELD)
-    return this
+    this.sort(compareFn);
+    notifyAll(this, FULL_ARRAY_FIELD);
+    return this;
   }
   /**
    * Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
@@ -319,7 +319,7 @@ export class SignalArray<T> implements Array<T> {
    * @param deleteCount The number of elements to remove.
    * @returns An array containing the elements that were deleted.
    */
-  splice(start: number, deleteCount?: number): T[]
+  splice(start: number, deleteCount?: number): T[];
   /**
    * Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
    * @param start The zero-based location in the array from which to start removing elements.
@@ -328,18 +328,18 @@ export class SignalArray<T> implements Array<T> {
    * @returns An array containing the elements that were deleted.
    */
   splice(start: number, deleteCount: number, ...items: T[]): T[] {
-    const deleted = this.#wrappedArray.splice(start, deleteCount, ...items)
-    notifyAll(this, FULL_ARRAY_FIELD)
-    return deleted
+    const deleted = this.#wrappedArray.splice(start, deleteCount, ...items);
+    notifyAll(this, FULL_ARRAY_FIELD);
+    return deleted;
   }
   /**
    * Inserts new elements at the start of an array, and returns the new length of the array.
    * @param items Elements to insert at the start of the array.
    */
   unshift(...items: T[]): number {
-    const num = this.#wrappedArray.unshift(...items)
-    notifyAll(this, FULL_ARRAY_FIELD)
-    return num
+    const num = this.#wrappedArray.unshift(...items);
+    notifyAll(this, FULL_ARRAY_FIELD);
+    return num;
   }
   /**
    * Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
@@ -347,8 +347,8 @@ export class SignalArray<T> implements Array<T> {
    * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
    */
   indexOf(searchElement: T, fromIndex?: number): number {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.map((e) => getComplexSignal(e)).indexOf(searchElement, fromIndex)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.map((e) => getComplexSignal(e)).indexOf(searchElement, fromIndex);
   }
   /**
    * Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.
@@ -356,8 +356,8 @@ export class SignalArray<T> implements Array<T> {
    * @param fromIndex The array index at which to begin searching backward. If fromIndex is omitted, the search starts at the last index in the array.
    */
   lastIndexOf(searchElement: T, fromIndex?: number): number {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.map((e) => getComplexSignal(e)).lastIndexOf(searchElement, fromIndex)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.map((e) => getComplexSignal(e)).lastIndexOf(searchElement, fromIndex);
   }
   /**
    * Determines whether all the members of an array satisfy the specified test.
@@ -367,7 +367,7 @@ export class SignalArray<T> implements Array<T> {
    * @param thisArg An object to which the this keyword can refer in the predicate function.
    * If thisArg is omitted, undefined is used as the this value.
    */
-  every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[]
+  every<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): this is S[];
   /**
    * Determines whether all the members of an array satisfy the specified test.
    * @param predicate A function that accepts up to three arguments. The every method calls
@@ -377,8 +377,8 @@ export class SignalArray<T> implements Array<T> {
    * If thisArg is omitted, undefined is used as the this value.
    */
   every(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.map((e) => getComplexSignal(e)).every(predicate, thisArg)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.map((e) => getComplexSignal(e)).every(predicate, thisArg);
   }
   /**
    * Determines whether the specified callback function returns true for any element of an array.
@@ -389,8 +389,8 @@ export class SignalArray<T> implements Array<T> {
    * If thisArg is omitted, undefined is used as the this value.
    */
   some(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.map((e) => getComplexSignal(e)).some(predicate, thisArg)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.map((e) => getComplexSignal(e)).some(predicate, thisArg);
   }
   /**
    * Performs the specified action for each element in an array.
@@ -398,8 +398,8 @@ export class SignalArray<T> implements Array<T> {
    * @param thisArg  An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
    */
   forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.map((e) => getComplexSignal(e)).forEach(callbackfn, thisArg)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.map((e) => getComplexSignal(e)).forEach(callbackfn, thisArg);
   }
   /**
    * Calls a defined callback function on each element of an array, and returns an array that contains the results.
@@ -407,31 +407,31 @@ export class SignalArray<T> implements Array<T> {
    * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
    */
   map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[] {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.map((e) => getComplexSignal(e)).map(callbackfn, thisArg) as U[]
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.map((e) => getComplexSignal(e)).map(callbackfn, thisArg) as U[];
   }
   /**
    * Returns the elements of an array that meet the condition specified in a callback function.
    * @param predicate A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array.
    * @param thisArg An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value.
    */
-  filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[]
+  filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[];
   /**
    * Returns the elements of an array that meet the condition specified in a callback function.
    * @param predicate A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array.
    * @param thisArg An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value.
    */
   filter(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[] {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.map((e) => getComplexSignal(e)).filter(predicate, thisArg)
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.map((e) => getComplexSignal(e)).filter(predicate, thisArg);
   }
   /**
    * Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
    * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.
    * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
    */
-  reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T
-  reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T
+  reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
+  reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T;
   /**
    * Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
    * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.
@@ -441,19 +441,19 @@ export class SignalArray<T> implements Array<T> {
     callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U,
     initialValue?: U,
   ): U {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.map((e) => getComplexSignal(e)).reduce(callbackfn, initialValue as any) as any
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.map((e) => getComplexSignal(e)).reduce(callbackfn, initialValue as any) as any;
   }
   /**
    * Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
    * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.
    * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
    */
-  reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T
+  reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T): T;
   reduceRight(
     callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T,
     initialValue?: T,
-  ): T
+  ): T;
   /**
    * Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
    * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.
@@ -463,9 +463,9 @@ export class SignalArray<T> implements Array<T> {
     callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) => U,
     initialValue?: U,
   ): U {
-    observe(this, FULL_ARRAY_FIELD)
-    return this.#wrappedArray.map((e) => getComplexSignal(e)).reduceRight(callbackfn, initialValue as any) as any
+    observe(this, FULL_ARRAY_FIELD);
+    return this.#wrappedArray.map((e) => getComplexSignal(e)).reduceRight(callbackfn, initialValue as any) as any;
   }
 
-  [n: number]: T
+  [n: number]: T;
 }

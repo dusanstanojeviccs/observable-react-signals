@@ -1,83 +1,83 @@
-import { notifyAll, observe } from '../observability'
-import { getComplexSignal } from './'
-import { SignalIterableIterator } from './signal_iterable_iterator'
+import { notifyAll, observe } from "../observability";
+import { getComplexSignal } from "./";
+import { SignalIterableIterator } from "./signal_iterable_iterator";
 
-const FULL_MAP_FIELD = 'map'
+const FULL_MAP_FIELD = "map";
 
 export class SignalMap<K, V> implements Map<K, V> {
-  #wrappedMap: Map<K, V>
+  #wrappedMap: Map<K, V>;
 
   constructor(wrappedMap: Map<K, V>) {
-    this.#wrappedMap = wrappedMap
+    this.#wrappedMap = wrappedMap;
   }
   clear(): void {
-    const keys = [...this.#wrappedMap.keys()]
+    const keys = [...this.#wrappedMap.keys()];
 
-    this.#wrappedMap.clear()
+    this.#wrappedMap.clear();
 
-    keys.forEach((key) => notifyAll(this, key))
-    notifyAll(this, FULL_MAP_FIELD)
+    keys.forEach((key) => notifyAll(this, key));
+    notifyAll(this, FULL_MAP_FIELD);
   }
   delete(key: K): boolean {
-    const response = this.#wrappedMap.delete(key)
-    notifyAll(this, key)
-    notifyAll(this, FULL_MAP_FIELD)
-    return response
+    const response = this.#wrappedMap.delete(key);
+    notifyAll(this, key);
+    notifyAll(this, FULL_MAP_FIELD);
+    return response;
   }
   forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void {
-    this.#wrappedMap.forEach((_, k) => observe(this, k))
-    observe(this, FULL_MAP_FIELD)
-    this.#wrappedMap.forEach(callbackfn, thisArg)
+    this.#wrappedMap.forEach((_, k) => observe(this, k));
+    observe(this, FULL_MAP_FIELD);
+    this.#wrappedMap.forEach(callbackfn, thisArg);
   }
   get(key: K): V | undefined {
-    observe(this, key)
-    const obj = this.#wrappedMap.get(key)
+    observe(this, key);
+    const obj = this.#wrappedMap.get(key);
     if (obj === undefined) {
-      return undefined
+      return undefined;
     }
-    return getComplexSignal(obj)
+    return getComplexSignal(obj);
   }
   has(key: K): boolean {
-    observe(this, key)
-    return this.#wrappedMap.has(key)
+    observe(this, key);
+    return this.#wrappedMap.has(key);
   }
   set(key: K, value: V): this {
-    const notifyOnNew = !this.#wrappedMap.has(key)
+    const notifyOnNew = !this.#wrappedMap.has(key);
 
-    this.#wrappedMap.set(key, value)
-    notifyAll(this, key)
+    this.#wrappedMap.set(key, value);
+    notifyAll(this, key);
     if (notifyOnNew) {
-      notifyAll(this, FULL_MAP_FIELD)
+      notifyAll(this, FULL_MAP_FIELD);
     }
-    return this
+    return this;
   }
   get size(): number {
-    observe(this, FULL_MAP_FIELD)
-    return this.#wrappedMap.size
+    observe(this, FULL_MAP_FIELD);
+    return this.#wrappedMap.size;
   }
   entries(): IterableIterator<[K, V]> {
-    this.#wrappedMap.forEach((_, k) => observe(this, k))
-    observe(this, FULL_MAP_FIELD)
+    this.#wrappedMap.forEach((_, k) => observe(this, k));
+    observe(this, FULL_MAP_FIELD);
 
-    return new SignalIterableIterator<[K, V]>(this.#wrappedMap.entries())
+    return new SignalIterableIterator<[K, V]>(this.#wrappedMap.entries());
   }
   keys(): IterableIterator<K> {
-    this.#wrappedMap.forEach((_, k) => observe(this, k))
-    observe(this, FULL_MAP_FIELD)
+    this.#wrappedMap.forEach((_, k) => observe(this, k));
+    observe(this, FULL_MAP_FIELD);
 
-    return new SignalIterableIterator<K>(this.#wrappedMap.keys())
+    return new SignalIterableIterator<K>(this.#wrappedMap.keys());
   }
   values(): IterableIterator<V> {
-    this.#wrappedMap.forEach((_, k) => observe(this, k))
-    observe(this, FULL_MAP_FIELD)
-    return new SignalIterableIterator<V>(this.#wrappedMap.values())
+    this.#wrappedMap.forEach((_, k) => observe(this, k));
+    observe(this, FULL_MAP_FIELD);
+    return new SignalIterableIterator<V>(this.#wrappedMap.values());
   }
   [Symbol.iterator](): IterableIterator<[K, V]> {
-    return this.entries()
+    return this.entries();
   }
   get [Symbol.toStringTag]() {
-    this.#wrappedMap.forEach((_, k) => observe(this, k))
-    observe(this, FULL_MAP_FIELD)
-    return this.#wrappedMap.toString()
+    this.#wrappedMap.forEach((_, k) => observe(this, k));
+    observe(this, FULL_MAP_FIELD);
+    return this.#wrappedMap.toString();
   }
 }
